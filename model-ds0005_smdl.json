@@ -1,0 +1,95 @@
+{
+   "Name":"ds005_model001",
+   "BIDSModelVersion":"1.0.0",
+   "Description":"",
+   "Input":{
+      "task": "mixedgamblestask",
+      "subject": ["01", "02", "03", "04"]
+   },
+   "Nodes":[
+       {
+         "Level":"run",
+         "Name":"subject",
+         "GroupBy":["subject"],
+         "Transformations":{
+            "Transformer":"pybids-transforms-v1",
+            "Instructions":[
+                {
+                    "Name": "Threshold",
+                    "Input": "gain",
+                    "Threshold": 0,
+                    "Binarize": true,
+                    "Output": "all_trials"
+                },
+                {
+                    "Name": "Convolve",
+                    "Input": "all_trials"
+                },
+                {
+                    "Name": "Convolve",
+                    "Input": "gain"
+                },
+                {
+                    "Name": "Convolve",
+                    "Input": "loss"
+                },
+                {
+                    "Name": "Convolve",
+                    "Input": "distance from indifference",
+                    "Output": "distance from indifference"
+                }
+            ]
+         },
+         "Model":{
+            "X":[
+                "all_trials",
+                "gain",
+                "loss",
+                "distance from indifference",
+                1
+            ]
+         },
+         "DummyContrasts":{
+            "Conditions":[
+               "loss"
+            ],
+            "Test":"t"
+         },
+         "Contrasts":[
+            {
+                "Name":"neg_loss_parametric",
+                "ConditionList":[
+                   "loss"
+                ],
+                "Weights":[
+                   -1
+                ],
+                "Test":"t"
+        }
+        ]
+    },
+      {
+         "Level":"dataset",
+         "Name":"t-test",
+         "GroupBy":[
+            "contrast"
+         ],
+         "Model":{
+            "X":[
+               1
+            ],
+            "Type":"glm"
+         },
+         "DummyContrasts":{
+            "Test":"t"
+         }
+        }
+    ],
+   "Edges":[
+      {
+         "Source":"subject",
+         "Destination":"t-test"
+         
+      }
+   ]
+}
